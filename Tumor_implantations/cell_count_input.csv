@@ -1,0 +1,5 @@
+Group,count,volume,cells_to_plate,volume_to_plate,scaling_factor
+FUCRW,121,15,2062500,1,4.0
+MYCN,112,15,2062500,1,4.0
+IDH1,110,15,2062500,1,4.0
+MYCN;IDH1,206,15,2062500,1,4.0
