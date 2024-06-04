@@ -8,6 +8,9 @@ def calculate_volumes(t_mass: float, init_vol: float = 1.0, desired_mass: float 
     new_vol = init_vol * scaling_percent
     return new_vol
 
+def calculate_solv_volume(volume_val: float, init_vol: float = 1.0):
+    return init_vol - volume_val
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
@@ -36,8 +39,8 @@ if __name__ == '__main__':
 
     input_data = pd.read_csv(args.file_path)
 
-    input_data['Volume of methanol to extract (mL)'] = input_data.loc[:, args.weight_key].apply(
-        func = calculate_volumes
-        )
+    input_data['Volume of methanol to extract (mL)'] = input_data.loc[:, args.weight_key].apply(func = calculate_volumes)
+    input_data['Volume of methanol to add (mL)'] = input_data.loc[:, 'Volume of methanol to extract (mL)'].apply(func = calculate_solv_volume)
+    input_data.insert(0, 'ID', range(1, len(input_data) + 1))
     
     input_data.to_csv(args.output_path, index = False)
