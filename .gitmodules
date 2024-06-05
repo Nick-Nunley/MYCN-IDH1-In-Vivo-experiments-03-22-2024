@@ -1,0 +1,3 @@
+[submodule "Submodules/BCA-Assay"]
+	path = Submodules/BCA-Assay
+	url = git@github.com:Nick-Nunley/BCA-Assay.git
