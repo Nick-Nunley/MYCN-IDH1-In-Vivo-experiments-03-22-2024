@@ -1,4 +1,4 @@
-ID,Sample-ID,Mass (g),Volume of methanol to extract (mL),Volume of methanol to add (mL)
+Vial-ID,Sample-ID,Mass (g),Volume of methanol to extract (mL),Volume of methanol to add (mL)
 1,FUCRW-M1-1-A,0.0097,0.41237113402061853,0.5876288659793815
 2,FUCRW-M1-1-B,0.0074,0.5405405405405405,0.45945945945945954
 3,FUCRW-M1-1-C,0.0089,0.449438202247191,0.550561797752809

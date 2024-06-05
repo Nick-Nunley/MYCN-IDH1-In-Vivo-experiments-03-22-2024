@@ -11,6 +11,29 @@ def calculate_volumes(t_mass: float, init_vol: float = 1.0, desired_mass: float 
 def calculate_solv_volume(volume_val: float, init_vol: float = 1.0):
     return init_vol - volume_val
 
+def main_volume_calculation(
+    input_file: str,
+    output_path: str,
+    weight_key: str = 'Mass (g)',
+    init_vol: float = 1.0,
+    desired_mass: float = 4.0,
+    mass_in_g: bool = True
+    ):
+        input_data = pd.read_csv(input_file)
+        input_data['Volume of methanol to extract (mL)'] = input_data.loc[:, weight_key].apply(
+            func = calculate_volumes,
+            init_vol = init_vol,
+            desired_mass = desired_mass,
+            mass_in_g = mass_in_g
+            )
+        input_data['Volume of methanol to add (mL)'] = input_data.loc[:, 'Volume of methanol to extract (mL)'].apply(
+            func = calculate_solv_volume,
+            init_vol = init_vol
+            )
+        input_data.insert(0, 'Vial-ID', range(1, len(input_data) + 1))
+        input_data.to_csv(output_path, index = False)
+        return
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
@@ -37,10 +60,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    input_data = pd.read_csv(args.file_path)
-
-    input_data['Volume of methanol to extract (mL)'] = input_data.loc[:, args.weight_key].apply(func = calculate_volumes)
-    input_data['Volume of methanol to add (mL)'] = input_data.loc[:, 'Volume of methanol to extract (mL)'].apply(func = calculate_solv_volume)
-    input_data.insert(0, 'ID', range(1, len(input_data) + 1))
-    
-    input_data.to_csv(args.output_path, index = False)
+    main_volume_calculation(
+        input_file = args.file_path,
+        output_path = args.output_path,
+        weight_key = args.weight_key
+        )
