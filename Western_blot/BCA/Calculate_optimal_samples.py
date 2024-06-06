@@ -12,8 +12,8 @@ class BCAdata:
     def obtain_max_value(self, max_keys = None):
         if max_keys is None:
             max_keys = [['A', '9'], ['B', '9']]
-            row_entries = [max_keys[0][0], max_keys[1][0]]
-            col_entries = [max_keys[0][1], max_keys[1][1]]
+        row_entries = [max_keys[0][0], max_keys[1][0]]
+        col_entries = [max_keys[0][1], max_keys[1][1]]
         max_value = np.mean(self.numeric_dataframe.loc[row_entries, col_entries].to_numpy())
         return max_value
 
@@ -49,6 +49,24 @@ class BCAdata:
             row_index, col_index = val
             subset_data[self.sample_id_dataframe.loc[row_index, col_index]] = [self.numeric_dataframe.loc[row_index, col_index]]
         return subset_data
+    
+def main(absorbance_filepath, sample_filepath, sample_regexs, max_keys = None, output_path = 'unknowns_data.xlsx'):
+    raw_data = pd.read_csv(absorbance_filepath)
+    raw_data = raw_data.set_index(keys = '0')
+    sample_keys = pd.read_csv(sample_filepath)
+    sample_keys = sample_keys.set_index(keys = '0')
+    sample_keys = sample_keys.fillna('') 
+    bca_test = BCAdata(raw_data, sample_keys)
+    optimal_samples = bca_test.main_calculations(sample_regexs = sample_regexs, max_keys = max_keys)
+    optimal_samples = [x for x in optimal_samples if x is not None]
+    print(f'Optimal samples are as follows: {optimal_samples}')
+    unknowns_data = bca_test.generate_unknowns_data(optimum_samples = optimal_samples, max_keys = max_keys) 
+    ordered_unknowns_data = {'Replicate': [int(1)]}
+    for key in optimal_samples:
+        if key in unknowns_data:
+            ordered_unknowns_data[key] = unknowns_data[key]
+    ordered_unknowns_data = pd.DataFrame(ordered_unknowns_data)
+    ordered_unknowns_data.to_excel(output_path, index = False)
         
 
 if __name__ == '__main__':
@@ -75,6 +93,13 @@ if __name__ == '__main__':
         default = [['A', '9'], ['B', '9']],
         type = list,
         help = '2D list containing max standard key entries where inner list is of length 2 containing row and column keys'
+        )
+    
+    parser.add_argument(
+        '-o',
+        '--output_path',
+        default = 'Western_blot/BCA/unknown_data.xlsx',
+        help = 'Output path for uknowns_data.xlsx'
         )
 
     args = parser.parse_args()
@@ -116,26 +141,10 @@ if __name__ == '__main__':
     
     sample_regexs = [re.compile(val) for val in SAMPLE_REGEXS]
 
-    raw_data = pd.read_csv(args.filepath)
-    raw_data = raw_data.set_index(keys = '0')
-
-    sample_keys = pd.read_csv(args.sample_key)
-    sample_keys = sample_keys.set_index(keys = '0')
-    sample_keys = sample_keys.fillna('')
-    
-    bca_test = BCAdata(raw_data, sample_keys)
-
-    optimal_samples = bca_test.main_calculations(sample_regexs = sample_regexs)
-    optimal_samples = [x for x in optimal_samples if x is not None]
-
-    print(f'Optimal samples are as follows: {optimal_samples}')
-
-    unknowns_data = bca_test.generate_unknowns_data(optimum_samples = optimal_samples)
-    
-    ordered_unknowns_data = {'Replicate': [int(1)]}
-    for key in optimal_samples:
-        if key in unknowns_data:
-            ordered_unknowns_data[key] = unknowns_data[key]
-    ordered_unknowns_data = pd.DataFrame(ordered_unknowns_data)
-    
-    ordered_unknowns_data.to_excel('Western_blot/BCA/unknown_data.xlsx', index = False)
+    main(
+        absorbance_filepath = args.filepath,
+        sample_filepath = args.sample_key,
+        sample_regexs = sample_regexs,
+        max_keys = args.max_keys,
+        output_path = args.output_path
+        )
