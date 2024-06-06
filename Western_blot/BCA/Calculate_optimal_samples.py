@@ -43,14 +43,14 @@ if __name__ == '__main__':
     parser.add_argument(
         '-f',
         '--filepath',
-        default = 'Western_blot/BCA/Iteration_0/BCA_data.csv',
+        default = 'Western_blot/BCA/BCA_data.csv',
         help = 'Path to raw BCA data'
         )
     
     parser.add_argument(
         '-s',
         '--sample_key',
-        default = 'Western_blot/BCA/Iteration_0/Plating_scheme.csv',
+        default = 'Western_blot/BCA/Plating_scheme.csv',
         help = 'Path to plating scheme for samples'
         )
     
@@ -115,5 +115,4 @@ if __name__ == '__main__':
 
     print(f'Optimal samples are as follows: {optimal_samples}')
 
-    print(len(optimal_samples))
     

@@ -175,7 +175,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '-o',
         '--output_path',
-        default = './Western_blot/BCA/Iteration_0/Calculate_dilutions/Serial_dilutions.csv'
+        default = './Western_blot/BCA/Calculate_dilutions/Serial_dilutions.csv'
         )
 
     args = parser.parse_args()
