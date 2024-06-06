@@ -35,6 +35,21 @@ class BCAdata:
         max_absorbance = self.obtain_max_value(max_keys = max_keys)
         optimal_samples = [self.return_optimal_sample_id(sample_regex = reg_val, max_val = max_absorbance) for reg_val in sample_regexs]
         return optimal_samples
+    
+    def generate_unknowns_data(self, optimum_samples = None, sample_regexs = None, max_keys = None):
+        if optimum_samples is None:
+            if sample_regexs is None:
+                raise ValueError(f'{sample_regexs} must be specified to do automatic sample optimization')
+            optimum_samples = self.main_calculations(sample_regexs = sample_regexs, max_keys = max_keys)
+            optimum_samples = [x for x in optimum_samples if x is not None]
+        mask = self.sample_id_dataframe.isin(optimum_samples)
+        index_values = self.sample_id_dataframe[mask].stack().index.tolist()
+        subset_data = {}
+        for val in index_values:
+            row_index, col_index = val
+            subset_data[self.sample_id_dataframe.loc[row_index, col_index]] = [self.numeric_dataframe.loc[row_index, col_index]]
+        return subset_data
+        
 
 if __name__ == '__main__':
 
@@ -115,4 +130,12 @@ if __name__ == '__main__':
 
     print(f'Optimal samples are as follows: {optimal_samples}')
 
+    unknowns_data = bca_test.generate_unknowns_data(optimum_samples = optimal_samples)
     
+    ordered_unknowns_data = {'Replicate': [int(1)]}
+    for key in optimal_samples:
+        if key in unknowns_data:
+            ordered_unknowns_data[key] = unknowns_data[key]
+    ordered_unknowns_data = pd.DataFrame(ordered_unknowns_data)
+    
+    ordered_unknowns_data.to_excel('Western_blot/BCA/unknown_data.xlsx', index = False)
