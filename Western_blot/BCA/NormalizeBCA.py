@@ -1,5 +1,6 @@
 import argparse
 import csv
+import re
 import numpy as np
             
 class NormalizeBca:
@@ -41,6 +42,15 @@ class NormalizeBca:
             for line in reader:
                 data_vec.append(float(line[0]))
         return data_vec
+    
+    def obtain_scaling_factor(self, filepath: str):
+        with open(filepath, 'r', encoding = 'UTF-8') as file:
+            file_header = file.readline().strip()
+            float_match = re.search(r'(\d+\.\d+)', file_header)
+            if float_match:
+                return float(float_match.group(1))
+            else:
+                raise ValueError('Could not find a scaling factor in input file')
 
     def scale_protein_volumes(self, input_dict: dict, scaling_vector: list):
         """Scale and shift 'Protein' and 'DI Water' fields of input_dict accordingly"""
