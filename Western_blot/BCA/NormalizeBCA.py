@@ -2,7 +2,7 @@ import argparse
 import csv
 import re
 import numpy as np
-            
+
 class NormalizeBca:
 
     def __init__(self, total_volume: float = None, scaling_factor: float = None):
@@ -19,10 +19,7 @@ class NormalizeBca:
             keys = file.readline().strip('\n').replace('"', '').split(sep)
             for key in keys:
                 data_dict[key] = []
-            csv_file = csv.reader(
-                file,
-                delimiter = sep
-                )
+            csv_file = csv.reader(file, delimiter = sep)
             for line in csv_file:
                 if len(line) == 0:
                     break
@@ -42,7 +39,7 @@ class NormalizeBca:
             for line in reader:
                 data_vec.append(float(line[0]))
         return data_vec
-    
+
     def obtain_scaling_factor(self, filepath: str):
         """Method to obtain scaling factor from initial input file"""
         with open(filepath, 'r', encoding = 'UTF-8') as file:
@@ -85,38 +82,68 @@ class NormalizeBca:
                 total_vol.append(input_dict[key[1]][0])
         self.total_volume = np.sum(np.array(total_vol)) / self.scaling_factor
 
-    def write_to_csv(self, dictionary: dict, filename: str, columns: list = None):
-        """Method to write a dictionary object to a .csv file"""
+    def write_to_csv(
+        self,
+        dictionary: dict,
+        filename: str,
+        lines: list,
+        data_start: int = 4,
+        data_end: int = 26,
+        columns: list = None
+        ):
+        """Method to write a dictionary object to a .csv file along with header and footer"""
         if columns is None:
             columns = list(dictionary.keys())
         with open(filename, 'w', encoding = 'UTF-8') as csv_file:
-            for index in range(len(dictionary[columns[0]]) + 1):
-                for col_t in enumerate(columns):
-                    if index == 0:
-                        if col_t[0] == (len(columns) - 1):
-                            csv_file.write(str(columns[col_t[0]]))
-                        else:
-                            csv_file.write(str(columns[col_t[0]]) + ',')
-                    else:
-                        if col_t[0] == (len(columns) - 1):
-                            csv_file.write(str(dictionary[columns[col_t[0]]][index - 1]))
-                        else:
-                            csv_file.write(str(dictionary[columns[col_t[0]]][index - 1]) + ',')
-                csv_file.write('\n')
+            # Write the header and any lines before the data section
+            for line in lines[:data_start]:
+                csv_file.write(line)
+            # Check if columns headers already exist in the lines before data_start
+            if lines[data_start-1].strip() != ','.join(columns):
+                csv_file.write(','.join(columns) + '\n')
+            # Write the data
+            for index in range(len(dictionary[columns[0]])):
+                row = [str(dictionary[col][index]) for col in columns]
+                csv_file.write(','.join(row) + '\n')
+            # Write any lines after the data section
+            for line in lines[data_end:]:
+                # Replace the Total Volume line with the updated total volume
+                if line.startswith('Total Volume:'):
+                    line = f'Total Volume:,{self.total_volume}\n'
+                csv_file.write(line)
 
     def main_method(self, input_filepath: str, norm_path: str, output_path: str):
         """Main method to wrap everything into"""
+        # Read the entire file and split into sections
+        with open(input_filepath, 'r', encoding='UTF-8') as file:
+            lines = file.readlines()
+        # Extract header, data, and footer sections
+        data_start = 4  # Assuming the data starts from the 4th line
+        data_end = len(lines)
+        for i in range(4, len(lines)):
+            if lines[i].strip() == '':
+                data_end = i
+                break
+        # Load initial data into a dictionary
         data_dict = self.load_init_data(filepath = input_filepath)
+        # Load the scaling vector
         scaling_vector = self.load_scaling_vector(input_path = norm_path)
+        self.obtain_scaling_factor(filepath = input_filepath)
+        # Scale protein volumes
         data_dict = self.scale_protein_volumes(
             input_dict = data_dict,
             scaling_vector = scaling_vector
             )
+        # Calculate total volume
+        self.calculate_total_volume(input_dict = data_dict)
+        # Write the updated content back to a CSV file
         self.write_to_csv(
             dictionary = data_dict,
-            filename = output_path
+            filename = output_path,
+            lines = lines,
+            data_start = data_start,
+            data_end = data_end
             )
-
 
 
 if __name__ == '__main__':
@@ -129,14 +156,14 @@ if __name__ == '__main__':
         default = 'Western_blot/BCA/bca_output.csv',
         help = 'Path to initial bca_output.csv'
         )
-    
+
     parser.add_argument(
         '-n',
         '--normalize_vector',
         default = 'Western_blot/BCA/test_vector.csv',
         help = 'Path to list of scaling values'
         )
-    
+
     parser.add_argument(
         '-o',
         '--output_path',
@@ -149,7 +176,7 @@ if __name__ == '__main__':
     NormBCA = NormalizeBca()
 
     NormBCA.main_method(
-        args.initial_input,
-        args.normalize_vector,
-        args.output_path
+        input_filepath = args.initial_input,
+        norm_path = args.normalize_vector,
+        output_path = args.output_path
         )
