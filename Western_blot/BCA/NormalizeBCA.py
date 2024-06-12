@@ -10,7 +10,7 @@ class NormalizeBca:
         self.scaling_factor = scaling_factor
 
     def load_init_data(self, filepath: str, sep: str = ',', lines_to_skip: int = 3):
-        """method to convert a csv file to a dictionary"""
+        """Method to convert a csv file to a dictionary"""
         data_dict = {}
         with open(filepath, encoding = 'UTF-8') as file:
             # Skip the first 3 lines
@@ -35,7 +35,7 @@ class NormalizeBca:
             return data_dict
 
     def load_scaling_vector(self, input_path: str):
-        """method to load in the scaling vector"""
+        """Method to load in the scaling vector"""
         data_vec = []
         with open(input_path, 'r', encoding = 'UTF-8') as file:
             reader = csv.reader(file)
@@ -44,11 +44,12 @@ class NormalizeBca:
         return data_vec
     
     def obtain_scaling_factor(self, filepath: str):
+        """Method to obtain scaling factor from initial input file"""
         with open(filepath, 'r', encoding = 'UTF-8') as file:
             file_header = file.readline().strip()
             float_match = re.search(r'(\d+\.\d+)', file_header)
             if float_match:
-                return float(float_match.group(1))
+                self.scaling_factor = float(float_match.group(1))
             else:
                 raise ValueError('Could not find a scaling factor in input file')
 
@@ -71,8 +72,21 @@ class NormalizeBca:
         input_dict['DI Water'] = list(new_waters)
         return input_dict
 
+    def calculate_total_volume(self, input_dict: dict):
+        """Method to calculate total volume"""
+        if self.scaling_factor is None:
+            raise ValueError(f'{self.scaling_factor} must be a floating point value. Try calling self.obtain_scaling_factor()')
+        # Assume that all total volumes are the same for efficiency and calculate first entries
+        total_vol = []
+        for key in enumerate(input_dict):
+            if key[1] == 'Sample':
+                continue
+            else:
+                total_vol.append(input_dict[key[1]][0])
+        self.total_volume = np.sum(np.array(total_vol)) / self.scaling_factor
+
     def write_to_csv(self, dictionary: dict, filename: str, columns: list = None):
-        """method to write a dictionary object to a .csv file"""
+        """Method to write a dictionary object to a .csv file"""
         if columns is None:
             columns = list(dictionary.keys())
         with open(filename, 'w', encoding = 'UTF-8') as csv_file:
