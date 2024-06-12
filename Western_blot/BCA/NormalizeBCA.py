@@ -10,7 +10,7 @@ class NormalizeBca:
         self.scaling_factor = scaling_factor
 
     def load_init_data(self, filepath: str, sep: str = ',', lines_to_skip: int = 3):
-        """Function to convert a csv file to a dictionary"""
+        """method to convert a csv file to a dictionary"""
         data_dict = {}
         with open(filepath, encoding = 'UTF-8') as file:
             # Skip the first 3 lines
@@ -35,7 +35,7 @@ class NormalizeBca:
             return data_dict
 
     def load_scaling_vector(self, input_path: str):
-        """Function to load in the scaling vector"""
+        """method to load in the scaling vector"""
         data_vec = []
         with open(input_path, 'r', encoding = 'UTF-8') as file:
             reader = csv.reader(file)
@@ -72,7 +72,7 @@ class NormalizeBca:
         return input_dict
 
     def write_to_csv(self, dictionary: dict, filename: str, columns: list = None):
-        """Function to write a dictionary object to a .csv file"""
+        """method to write a dictionary object to a .csv file"""
         if columns is None:
             columns = list(dictionary.keys())
         with open(filename, 'w', encoding = 'UTF-8') as csv_file:
@@ -90,8 +90,8 @@ class NormalizeBca:
                             csv_file.write(str(dictionary[columns[col_t[0]]][index - 1]) + ',')
                 csv_file.write('\n')
 
-    def main_function(self, input_filepath: str, norm_path: str, output_path: str):
-        """Main function to wrap everything into"""
+    def main_method(self, input_filepath: str, norm_path: str, output_path: str):
+        """Main method to wrap everything into"""
         data_dict = self.load_init_data(filepath = input_filepath)
         scaling_vector = self.load_scaling_vector(input_path = norm_path)
         data_dict = self.scale_protein_volumes(
@@ -134,7 +134,7 @@ if __name__ == '__main__':
 
     NormBCA = NormalizeBca()
 
-    NormBCA.main_function(
+    NormBCA.main_method(
         args.initial_input,
         args.normalize_vector,
         args.output_path
