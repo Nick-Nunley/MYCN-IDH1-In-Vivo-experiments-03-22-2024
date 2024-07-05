@@ -80,6 +80,11 @@ def barplot_data(
     ax.spines['bottom'].set_linewidth(1.5)
     ax.xaxis.set_tick_params(width = 1.5)
     ax.yaxis.set_tick_params(width = 1.5)
+    # Making ticks bold
+    for tick in ax.xaxis.get_major_ticks():
+        tick.label1.set_fontweight('bold')
+    for tick in ax.yaxis.get_major_ticks():
+        tick.label1.set_fontweight('bold')
     if x_label is not None:
         if not isinstance(x_label, str):
             raise ValueError(f'{x_label} should be a string')
@@ -248,5 +253,6 @@ if __name__ == '__main__':
         input_data = ij_object_relative,
         xvals_key = 'Condition',
         yvals_key = 'AR',
-        color_index = 'Color'
+        color_index = 'Color',
+        y_label = 'AR Intesity / Actin Intensity'
         )
