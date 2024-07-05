@@ -249,10 +249,13 @@ if __name__ == '__main__':
     ij_object_relative['Condition'] = [re.sub('-M[0-9]-[0-9]-(E|F)', '', re.sub(' \(1/2\)', '', x)) for x in list(ij_object_relative.index)]
     ij_object_relative['Color'] = (['orange'] * 4) + (['black'] * 4) + (['purple'] * 6)
 
-    barplot_data(
-        input_data = ij_object_relative,
-        xvals_key = 'Condition',
-        yvals_key = 'AR',
-        color_index = 'Color',
-        y_label = 'AR Intesity / Actin Intensity'
-        )
+    ij_object.feature_labels = [x for x in list(ij_object_relative.columns) if x != 'Condition' and x != 'Color' and x != args.normalization_key]
+
+    for feature in ij_object.feature_labels:
+        barplot_data(
+            input_data = ij_object_relative,
+            xvals_key = 'Condition',
+            yvals_key = feature,
+            color_index = 'Color',
+            y_label = f'{feature} Intesity / {args.normalization_key} Intensity'
+            )
