@@ -16,6 +16,24 @@ def norm_division(sample: float, normalization_factor: float) -> float:
     transformed_value = sample / normalization_factor
     return transformed_value
 
+def run_ttest(input_data, xvals_key, yvals_key, paired: bool = False):
+    unique_x_vals = list(set(list(input_data.loc[:, xvals_key])))
+    grouped_vals = [list(input_data.loc[input_data[xvals_key] == unique_value, yvals_key]) for unique_value in unique_x_vals]
+    if len(grouped_vals) != 2:
+        raise ValueError('Cannot perform a T-test with a categorical variable that does not have two levels')
+    if paired:
+        t_test = stats.ttest_rel(
+            a = grouped_vals[0],
+            b = grouped_vals[1]
+            )
+    else:
+        t_test = stats.ttest_ind(
+            a = grouped_vals[0],
+            b = grouped_vals[1],
+            equal_var = False
+            )
+    return t_test
+
 def run_anova(input_data, xvals_key, yvals_key, post_hoc_test = True):
     unique_x_vals = list(set(list(input_data.loc[:, xvals_key])))
     grouped_vals = [list(input_data.loc[input_data[xvals_key] == unique_value, yvals_key]) for unique_value in unique_x_vals]
@@ -115,14 +133,22 @@ def barplot_data(
         plt.ylim(ylimits)
     plt.show()
     if output_stats is True:
-        anov_output, tuckey_output = run_anova(
-            input_data = input_data,
-            xvals_key = xvals_key,
-            yvals_key = yvals_key,
-            post_hoc_test = post_hoc_test
-            )
-        print(anov_output)
-        print(tuckey_output)
+        if len(set(list(input_data.loc[:, xvals_key]))) == 2: # Only two levels, perform an ind T-test with Welch's correction
+            ttest_output = run_ttest(
+                input_data = input_data,
+                xvals_key = xvals_key,
+                yvals_key = yvals_key
+                )
+            print(ttest_output)
+        else: # Else perform an ANOVA
+            anov_output, tuckey_output = run_anova(
+                input_data = input_data,
+                xvals_key = xvals_key,
+                yvals_key = yvals_key,
+                post_hoc_test = post_hoc_test
+                )
+            print(anov_output)
+            print(tuckey_output)
 
 
 class IJ_data:
