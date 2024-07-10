@@ -2,27 +2,7 @@ import re
 import argparse
 import numpy as np
 import pandas as pd
-from scipy import stats
 import Quantification as qf
-
-def run_ttest(input_data, xvals_key, yvals_key, paired: bool = False):
-    unique_x_vals = list(set(list(input_data.loc[:, xvals_key])))
-    grouped_vals = [list(input_data.loc[input_data[xvals_key] == unique_value, yvals_key]) for unique_value in unique_x_vals]
-    if len(grouped_vals) != 2:
-        raise ValueError('Cannot perform a T-test with a categorical variable that does not have two levels')
-    if paired:
-        t_test = stats.ttest_rel(
-            a = grouped_vals[0],
-            b = grouped_vals[1]
-            )
-    else:
-        t_test = stats.ttest_ind(
-            a = grouped_vals[0],
-            b = grouped_vals[1],
-            equal_var = False
-            )
-    return t_test
-
 
 if __name__ == '__main__':
 
@@ -94,10 +74,3 @@ if __name__ == '__main__':
             y_label = f'{feature} Intesity / {args.normalization_key} Intensity',
             ylimits = [0, 4]
             )
-        
-        ttest_result = run_ttest(
-            input_data = ij_object_relative,
-            xvals_key = 'Condition',
-            yvals_key = feature
-            )
-        print(f'T-test result: {ttest_result}')
